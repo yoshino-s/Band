@@ -1,8 +1,12 @@
-
+/*
+ *Author: Yoshino-s (Cui Chenyang)
+ *Date: 2018.4.18
+ *Descrption: Program for Genix's band
+*/
 #include "Wire.h"
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
-#include "printf.h"
+
 
 MPU6050 mpu(0x68);
 
@@ -46,7 +50,7 @@ unsigned int stopTime = 0;
 
 void setup() {
 	Serial.begin(115200);
-	printf_begin();
+	// printf_begin();
 	pinMode(5, OUTPUT);
 	digitalWrite(5, LOW);
 
@@ -132,7 +136,7 @@ void check() {
 	delta = (int)((lastPitch - pitch)*1000); //delta between last one and this one
 	int op0 = delta;
 
-	if (roll > MAX_ROLL_VALUE) {
+	if (roll > MAX_ROLL_VALUE || roll < -MAX_ROLL_VALUE) {
 		//motion wrong
 		clearData();
 	}
@@ -183,10 +187,11 @@ void check() {
 			digitalWrite(5, HIGH);
 			delay(500);
 			digitalWrite(5, LOW);
+			// send the ir signal
 			clearData();
 		}
 	}
-	printf("%d %d %d %d\n", op0, statusLeft, statusRight, statusStop);
+	// printf("%d %d %d %d\n", op0, statusLeft, statusRight, statusStop);
 
 	lastDelta = delta;
 	lastPitch = pitch; //save last pitch
@@ -197,4 +202,16 @@ void clearData() {
 	statusRight = DEFAULT;
 	statusStop = DEFAULT;
 	stopTime = 0;
+}
+
+int serial_putc(char c, FILE *)
+{
+	Serial.write(c);
+
+	return c;
+}
+
+void printf_begin(void)
+{
+	fdevopen(&serial_putc, 0);
 }
